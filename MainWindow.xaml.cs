@@ -10,6 +10,7 @@ namespace ForbiddenWordsSearchApp
         private List<string> forbiddenWords;
         private string outputFolderPath;
         private SearchManager searchManager;
+        private bool isSearching = false;
 
         public MainWindow()
         {
@@ -21,12 +22,12 @@ namespace ForbiddenWordsSearchApp
         {
             var dialog = new CommonOpenFileDialog
             {
-                IsFolderPicker = true 
+                IsFolderPicker = true
             };
 
             if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
             {
-                outputFolderPath = dialog.FileName; 
+                outputFolderPath = dialog.FileName;
                 SelectedFolderPath.Text = outputFolderPath;
             }
         }
@@ -48,26 +49,44 @@ namespace ForbiddenWordsSearchApp
                 return;
             }
 
-            MessageBox.Show("Запускаємо пошук..."); 
+            isSearching = true; 
+
+            MessageBox.Show("Запускаємо пошук...");
 
             searchManager = new SearchManager(forbiddenWords, outputFolderPath, ResultTextBlock, SearchProgressBar, ProgressInfo);
             searchManager.StartSearch();
-        }
 
+            StartButton.IsEnabled = false;
+            StopButton.IsEnabled = true;
+            PauseButton.IsEnabled = true;
+            ResumeButton.IsEnabled = false;
+        }
 
         private void StopButton_Click(object sender, RoutedEventArgs e)
         {
             searchManager?.StopSearch();
+            isSearching = false; 
+
+            StartButton.IsEnabled = true;
+            StopButton.IsEnabled = false;
+            PauseButton.IsEnabled = false;
+            ResumeButton.IsEnabled = false;
         }
 
         private void PauseButton_Click(object sender, RoutedEventArgs e)
         {
             searchManager?.PauseSearch();
+
+            PauseButton.IsEnabled = false;
+            ResumeButton.IsEnabled = true;
         }
 
         private void ResumeButton_Click(object sender, RoutedEventArgs e)
         {
             searchManager?.ResumeSearch();
+
+            PauseButton.IsEnabled = true;
+            ResumeButton.IsEnabled = false;
         }
     }
 }

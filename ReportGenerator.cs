@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace ForbiddenWordsSearchApp
@@ -12,20 +13,20 @@ namespace ForbiddenWordsSearchApp
             this.outputFolderPath = outputFolderPath;
         }
 
-        public void GenerateReport(Dictionary<string, int> wordCount, int totalFiles, int processedFiles)
+        public void GenerateReport(Dictionary<string, int> results, int totalFiles, int processedFiles)
         {
-            var reportFilePath = Path.Combine(outputFolderPath, "Report.txt");
-            using (var writer = new StreamWriter(reportFilePath))
-            {
-                writer.WriteLine("Звіт про заборонені слова");
-                writer.WriteLine("=========================");
-                writer.WriteLine($"Всього оброблено файлів: {totalFiles}");
-                writer.WriteLine($"Файлів із забороненими словами: {processedFiles}");
-                writer.WriteLine("Кількість заборонених слів:");
+            string reportPath = Path.Combine(outputFolderPath, "Report.txt");
 
-                foreach (var word in wordCount.OrderByDescending(w => w.Value).Take(10))
+            using (var writer = new StreamWriter(reportPath))
+            {
+                writer.WriteLine("Звіт про пошук заборонених слів");
+                writer.WriteLine($"Загальна кількість файлів: {totalFiles}");
+                writer.WriteLine($"Оброблених файлів: {processedFiles}");
+                writer.WriteLine("Заборонені слова:");
+
+                foreach (var result in results)
                 {
-                    writer.WriteLine($"{word.Key}: {word.Value} входжень");
+                    writer.WriteLine($"{result.Key}: {result.Value}");
                 }
             }
         }

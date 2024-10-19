@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Controls;
@@ -52,16 +53,19 @@ namespace ForbiddenWordsSearchApp
 
         private async Task SearchFiles(CancellationToken token)
         {
-            var drives = DriveInfo.GetDrives().Where(d => d.IsReady);
-            totalFiles = drives.SelectMany(drive => Directory.GetFiles(drive.RootDirectory.FullName, "*.*", SearchOption.AllDirectories)).Count();
+            var directoryInfo = new DirectoryInfo(outputFolderPath);
+            var files = directoryInfo.GetFiles("*.*", SearchOption.AllDirectories);
+            totalFiles = files.Length;
+
             progressBar.Dispatcher.Invoke(() => {
                 progressBar.Maximum = totalFiles;
-                progressInfo.Text = $"0 з {totalFiles} файлів оброблено"; // Додайте початковий текст
+                progressInfo.Text = $"0 з {totalFiles} файлів оброблено";
             });
 
-            foreach (var drive in drives)
+            foreach (var file in files)
             {
-                await SearchInDirectory(drive.RootDirectory, token);
+                if (token.IsCancellationRequested) return;
+                await ProcessFile(file, token);
             }
 
             resultTextBlock.Dispatcher.Invoke(() =>
@@ -70,30 +74,6 @@ namespace ForbiddenWordsSearchApp
             });
 
             GenerateReport();
-        }
-
-        private async Task SearchInDirectory(DirectoryInfo directory, CancellationToken token)
-        {
-            if (token.IsCancellationRequested) return;
-
-            try
-            {
-                foreach (var file in directory.GetFiles())
-                {
-                    if (token.IsCancellationRequested) return;
-                    await ProcessFile(file, token);
-                }
-
-                foreach (var subDirectory in directory.GetDirectories())
-                {
-                    if (token.IsCancellationRequested) return;
-                    await SearchInDirectory(subDirectory, token);
-                }
-            }
-            catch (UnauthorizedAccessException)
-            {
-
-            }
         }
 
         private async Task ProcessFile(FileInfo file, CancellationToken token)
@@ -109,6 +89,5 @@ namespace ForbiddenWordsSearchApp
             var reportGenerator = new ReportGenerator(outputFolderPath);
             reportGenerator.GenerateReport(new Dictionary<string, int>(), totalFiles, processedFiles);
         }
-
     }
 }

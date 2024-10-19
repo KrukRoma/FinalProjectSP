@@ -15,7 +15,7 @@ namespace ForbiddenWordsSearchApp
         private TextBlock resultTextBlock;
         private ProgressBar progressBar;
         private TextBlock progressInfo;
-        private int processedFiles = 0;
+        private static int processedFiles = 0; 
 
         public FileProcessor(FileInfo file, List<string> forbiddenWords, string outputFolderPath, TextBlock resultTextBlock, ProgressBar progressBar, TextBlock progressInfo)
         {
@@ -65,7 +65,7 @@ namespace ForbiddenWordsSearchApp
             progressBar.Dispatcher.Invoke(() =>
             {
                 progressBar.Value = processedFiles;
-                progressInfo.Text = $"{processedFiles} файлів оброблено"; 
+                progressInfo.Text = $"{processedFiles} файлів оброблено";
             });
         }
     }
